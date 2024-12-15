@@ -16,12 +16,15 @@ before:
     # - go generate ./...
 
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - binary: enablePamTid
+    env:
+      - CGO_ENABLED=1
     goos:
-      # - linux
-      # - windows
       - darwin
+    goarch:
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
 
 archives:
   - format: tar.gz
@@ -44,9 +47,3 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-
-upx:
-  - enabled: true
-    goos:
-      - darwin
-    compress: best

@@ -41,7 +41,7 @@ func buildInfo() string {
 	revision := "UNKNOWN"
 	if ok {
 		for _, element := range info.Settings {
-			slog.Info("element", "key", element.Key, "value", element.Value)
+			slog.Debug("element", "key", element.Key, "value", element.Value)
 			if element.Key == "vcs.revision" {
 				revision = element.Value
 			}
@@ -68,10 +68,7 @@ and so wrote this utility.`,
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		err := enablepamtid.Run()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s", err.Error())
-			os.Exit(1)
-		}
+		cobra.CheckErr(err)
 	},
 	Version: buildInfo(),
 }
