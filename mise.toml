@@ -8,3 +8,6 @@ run = "goreleaser build --clean"
 
 [hooks]
 enter = "mise install -q"
+
+[settings]
+experimental = true
