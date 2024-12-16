@@ -7,7 +7,7 @@ description = "Build the CLI (pass `--snapshot` to build HEAD)"
 run = "goreleaser build --clean"
 
 [hooks]
-enter = "mise install -q"
+enter = "mise install"
 
 [settings]
 experimental = true
