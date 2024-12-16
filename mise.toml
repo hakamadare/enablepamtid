@@ -1,0 +1,7 @@
+[tools]
+go = "latest"
+goreleaser = "latest"
+
+[tasks.build]
+description = "Build the CLI (pass `--snapshot` to build HEAD)"
+run = "goreleaser build --clean"
