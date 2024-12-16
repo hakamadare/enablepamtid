@@ -5,3 +5,6 @@ goreleaser = "latest"
 [tasks.build]
 description = "Build the CLI (pass `--snapshot` to build HEAD)"
 run = "goreleaser build --clean"
+
+[hooks]
+enter = "mise install -q"
