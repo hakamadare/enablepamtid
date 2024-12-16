@@ -1,10 +1,15 @@
 [tools]
+cosign = "latest"
 go = "latest"
 goreleaser = "latest"
 
 [tasks.build]
-description = "Build the CLI (pass `--snapshot` to build HEAD)"
+description = "Build the CLI locally (pass `--snapshot` to build HEAD)"
 run = "goreleaser build --clean"
+
+[tasks.release]
+description = "Release a new version"
+run = "goreleaser release --auto-snapshot --clean"
 
 [hooks]
 enter = "mise install"

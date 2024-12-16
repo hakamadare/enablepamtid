@@ -36,13 +36,15 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        format: zip
+
+release:
+  draft: true
+  replace_existing_draft: true
+  replace_existing_artifacts: true
+  include_meta: true
 
 changelog:
-  sort: asc
+  sort: desc
   filters:
     exclude:
       - "^docs:"
