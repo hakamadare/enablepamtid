@@ -1,20 +1,10 @@
 [tools]
-cosign = "latest"
+gh = "latest"
 go = "latest"
 goreleaser = "latest"
 svu = "latest"
 
-[tasks.build]
-description = "Build the CLI locally (pass `--snapshot` to build HEAD)"
-run = "goreleaser build --clean"
-
-[tasks.tag]
-description = "Tag a new version"
-run = "git tag $(svu next) && git push --tags"
-
-[tasks.release]
-description = "Release a new version"
-run = "goreleaser release --auto-snapshot --clean"
+# tasks are defined in .mise/tasks
 
 [hooks]
 enter = "mise install"
