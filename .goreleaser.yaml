@@ -38,7 +38,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
 release:
-  draft: true
+  draft: false
   replace_existing_draft: true
   replace_existing_artifacts: true
   include_meta: true
