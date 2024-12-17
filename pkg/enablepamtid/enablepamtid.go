@@ -1,6 +1,7 @@
 package enablepamtid
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -38,20 +39,29 @@ func copyTemplate(cfg *config) error {
 	}
 	defer src.Close()
 
-	dst, err := os.Create(cfg.sudoConfigPath)
+	_, err = os.Open(cfg.sudoConfigPath)
 	if err != nil {
-		return handleError("unable to create sudoConfig", err)
-	}
-	defer dst.Close()
+		if errors.Is(err, os.ErrNotExist) {
+			// copy the template file
+			dst, err := os.Create(cfg.sudoConfigPath)
+			if err != nil {
+				return handleError("unable to create sudoConfig", err)
+			}
+			defer dst.Close()
 
-	_, err = dst.ReadFrom(src)
-	if err != nil {
-		return handleError("unable to read from sudoConfig template", err)
-	}
+			_, err = dst.ReadFrom(src)
+			if err != nil {
+				return handleError("unable to read from sudoConfig template", err)
+			}
 
-	_, err = io.Copy(dst, src)
-	if err != nil {
-		return handleError("unable to write sudoConfig", err)
+			_, err = io.Copy(dst, src)
+			if err != nil {
+				return handleError("unable to write sudoConfig", err)
+			}
+
+			return nil
+		}
+		return handleError("unable to check existence of sudoConfig", err)
 	}
 
 	return nil
@@ -110,6 +120,7 @@ func Run(cfg *config) error {
 		return handleError("unable to set sudo element module value", err)
 	}
 
+	// FIXME handle error message when no changes need to be made
 	err = aug.Save()
 	if err != nil {
 		return handleError("unable to save pending changes", err)
