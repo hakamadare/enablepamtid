@@ -12,9 +12,14 @@ import (
 
 // FIXME ugh
 const (
-	sudoConfig = "/etc/pam.d/sudo_local"
-	sudoPrefix = "/files/etc/pam.d/sudo_local"
+	defaultSudoConfigPath = "/etc/pam.d/sudo_local"
+	defaultAugeasPrefix   = "/files"
 )
+
+type config struct {
+	sudoConfigPath   string
+	augeasPathPrefix string
+}
 
 func augeasConf() augeas.Flag {
 	slog.Debug("no Augeas config parsing yet")
@@ -26,14 +31,14 @@ func handleError(msg string, err error) error {
 	return err
 }
 
-func copyTemplate() error {
-	src, err := os.Open(fmt.Sprintf("%s.template", sudoConfig))
+func copyTemplate(cfg *config) error {
+	src, err := os.Open(fmt.Sprintf("%s.template", cfg.sudoConfigPath))
 	if err != nil {
 		return handleError("unable to read sudoConfig template", err)
 	}
 	defer src.Close()
 
-	dst, err := os.Create(sudoConfig)
+	dst, err := os.Create(cfg.sudoConfigPath)
 	if err != nil {
 		return handleError("unable to create sudoConfig", err)
 	}
@@ -52,11 +57,22 @@ func copyTemplate() error {
 	return nil
 }
 
-func Run() error {
+func Config(cfgPath string, augPrefix string) *config {
+	if cfgPath == "" {
+		cfgPath = defaultSudoConfigPath
+	}
+	if augPrefix == "" {
+		augPrefix = defaultAugeasPrefix
+	}
+
+	return &config{sudoConfigPath: cfgPath, augeasPathPrefix: augPrefix}
+}
+
+func Run(cfg *config) error {
 	// FIXME check for macOS >= Sonoma
 	// https://stackoverflow.com/a/75955475/17597
 
-	err := copyTemplate()
+	err := copyTemplate(cfg)
 	if err != nil {
 		return handleError("unable to copy template", err)
 	}
@@ -67,9 +83,16 @@ func Run() error {
 	}
 	defer aug.Close()
 
-	_, err = aug.DefineVariable("pam_tid", path.Join(sudoPrefix, "1"))
+	_, created, err := aug.DefineNode(
+		"pam_tid",
+		path.Join(cfg.augeasPathPrefix, cfg.sudoConfigPath, "1"),
+		"",
+	)
 	if err != nil {
 		return handleError("unable to define Augeas variable", err)
+	}
+	if !created {
+		return fmt.Errorf("no additional node created in sudo_local")
 	}
 
 	err = aug.Set(path.Join("$pam_tid", "type"), "auth")
@@ -90,6 +113,14 @@ func Run() error {
 	err = aug.Save()
 	if err != nil {
 		return handleError("unable to save pending changes", err)
+	}
+
+	errors, err := aug.Match(path.Join("/augeas", cfg.sudoConfigPath, "/error"))
+	if err != nil {
+		return handleError("unable to query Augeas errors", err)
+	}
+	for _, v := range errors {
+		slog.Error("augeas error", "err", v)
 	}
 
 	return nil

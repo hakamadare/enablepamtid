@@ -29,9 +29,10 @@ import (
 	"runtime/debug"
 
 	"github.com/adrg/xdg"
-	"github.com/hakamadare/enablepamtid/pkg/enablepamtid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/hakamadare/enablepamtid/pkg/enablepamtid"
 )
 
 var cfgFile string
@@ -67,7 +68,9 @@ and so wrote this utility.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		err := enablepamtid.Run()
+		// FIXME read config values from flags
+		config := enablepamtid.Config("", "")
+		err := enablepamtid.Run(config)
 		cobra.CheckErr(err)
 	},
 	Version: buildInfo(),
@@ -87,7 +90,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/enablepamtid/config.yaml)")
+	rootCmd.PersistentFlags().
+		StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/enablepamtid/config.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
